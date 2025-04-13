@@ -1,2 +1,3 @@
-# AgentAI
-AI-powered flight search assistant
+# Flyzy
+
+AI agent do wyszukiwania tanich lotów.
