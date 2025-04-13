@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from .telegram_bot import telegram_webhook
+from .telegram_bot import telegram_webhook  # Importujemy router
 
 app = FastAPI()
 
+# Dodajemy router
 app.include_router(telegram_webhook)
 
 @app.get("/", response_class=HTMLResponse)
