@@ -1,34 +1,56 @@
-
-import os
-from fastapi import FastAPI, Form, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
-import openai
-from dotenv import load_dotenv
-from fastapi import Request
-
-load_dotenv()
+from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from app.schemas import FlightSearchRequest
+import traceback
 
 app = FastAPI()
+
+# Middleware CORS – pozwala na zapytania z innych źródeł (np. frontend)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # W produkcji warto ograniczyć
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Ładowanie szablonów HTML
 templates = Jinja2Templates(directory="templates")
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
+async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/search", response_class=HTMLResponse)
-async def search_flights(request: Request, origin: str = Form(...), destination: str = Form(...), date: str = Form(...)):
+
+@app.post("/search")
+async def search_flights(request: FlightSearchRequest):
     try:
-        prompt = f"Find the cheapest flight from {origin} to {destination} on {date}. Provide details."
-        response = openai.Completion.create(
-            model="gpt-4",
-            prompt=prompt,
-            max_tokens=100,
-            temperature=0.5
-        )
-        flight_info = response.choices[0].text.strip()
-        return templates.TemplateResponse("result.html", {"request": request, "flight_info": flight_info})
+        # Debugowanie danych wejściowych
+        print("🔍 Rozpoczęto wyszukiwanie lotów:", request)
+
+        # Przykładowe dane zwracane (symulacja)
+        wyniki = {
+            "loty": [
+                {
+                    "miejsce_wylotu": request.origin,
+                    "miejsce_docelowe": request.destination,
+                    "data_wylotu": request.departure_date,
+                    "cena": "199.99 EUR",
+                    "linia_lotnicza": "Flyzy Airlines",
+                }
+            ]
+        }
+
+        print("✅ Znaleziono wyniki:", wyniki)
+        return wyniki
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail="An error occurred while processing the flight search.")
+        print("❌ Błąd podczas wyszukiwania lotów:", e)
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail="Wystąpił błąd podczas przetwarzania wyszukiwania lotów."
+        )
