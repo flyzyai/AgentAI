@@ -1,10 +1,16 @@
+# app/main.py
+import os
+from dotenv import load_dotenv
+
+# Ładowanie zmiennych z pliku .env
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from .telegram_bot import telegram_webhook  # Importujemy router
+from .telegram_bot import telegram_webhook
 
 app = FastAPI()
 
-# Dodajemy router
 app.include_router(telegram_webhook)
 
 @app.get("/", response_class=HTMLResponse)
