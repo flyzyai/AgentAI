@@ -1,18 +1,16 @@
-# app/main.py
-import os
-from dotenv import load_dotenv
-
-# Ładowanie zmiennych z pliku .env
-load_dotenv()
-
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from .telegram_bot import telegram_webhook
+from fastapi.staticfiles import StaticFiles
+import os
 
 app = FastAPI()
 
-app.include_router(telegram_webhook)
+# Ścieżka do folderu statycznego
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    return "<h1>Welcome to Flyzy!</h1><p>AI-powered flight search assistant</p>"
+    # Zwrócenie zawartości pliku index.html
+    with open("static/index.html", "r") as file:
+        content = file.read()
+    return HTMLResponse(content=content)
